@@ -42,6 +42,8 @@ print("[INFO] starting video stream...")
 
 ct = Tracker()
 cap =cv2.VideoCapture(0)
+#"C:\\Users\\MISHO TECHNOLOGY\\Downloads\\ketf_fe_ketf.mp4"
+#"D:\\cartoon\\Coco.mp4"
 while True:
     success, frame = cap.read()
     if not success:
