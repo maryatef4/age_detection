@@ -41,9 +41,7 @@ print("[INFO] starting video stream...")
 
 
 ct = Tracker()
-cap =cv2.VideoCapture(0)
-#"C:\\Users\\MISHO TECHNOLOGY\\Downloads\\ketf_fe_ketf.mp4"
-#"D:\\cartoon\\Coco.mp4"
+cap =cv2.VideoCapture("C:\\Users\\MISHO TECHNOLOGY\\Downloads\\vid5.mp4")
 while True:
     success, frame = cap.read()
     if not success:
@@ -65,56 +63,63 @@ while True:
             c = class_list[d]
             if 'person' in c:
                 list.append([x1, y1, x2, y2]) 
-                bbox_id = ct.update(list)
-                for bbox in bbox_id:
-                #box axis and id
-                    x3, y3, x4, y4, id = bbox
-                    cx = (x3 + x4) // 2
-                    cy = y3
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                 # Check if faces are detected before processing
+                if list:
+                    bbox_id = ct.update(list)
+                    for bbox in bbox_id:
+                        #box axis and id
+                        x3, y3, x4, y4, id = bbox
+                        cx = (x3 + x4) // 2
+                        cy = y3
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-                    # frame = imutils.resize(frame, width=400)
+                        # frame = imutils.resize(frame, width=400)
 
-                    detector = dlib.get_frontal_face_detector()
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                    rects = detector(gray, 0)
+                        detector = dlib.get_frontal_face_detector()
+                        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                        rects = detector(gray, 0)
 
-                    objects_rect = []
+                        objects_rect = []
 
-                    for rect in rects:
-                        (x, y, w, h) = face_utils.rect_to_bb(rect)
-                        if y < 0:
-                            print("a")
-                            continue
-                        objects_rect.append((x, y, x + w, y + h))
+                        for rect in rects:
+                            (x, y, w, h) = face_utils.rect_to_bb(rect)
+                            if y < 0:
+                                print("a")
+                                continue
+                            objects_rect.append((x, y, x + w, y + h))
 
-                        face_img = frame[y:y+h, x:x+w].copy()
+                            face_img = frame[y:y+h, x:x+w].copy()
 
-                        # if face_img is not None and not face_img.size == (0, 0):
-                        if face_img is not None and not face_img.size == (0, 0) and face_img.shape[0] > 0 and face_img.shape[1] > 0:
+                            # if face_img is not None and not face_img.size == (0, 0):
+                            if face_img is not None and not face_img.size == (0, 0) and face_img.shape[0] > 0 and face_img.shape[1] > 0:
 
-                            blob2 = cv2.dnn.blobFromImage(face_img, 1, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-                            age_net.setInput(blob2)
-                            age_preds = age_net.forward()
-                            predicted_age_index = age_preds[0].argmax()
-                            predicted_age_range = age_list[predicted_age_index]
-                            lower_bound_age = int(''.join(filter(str.isdigit, predicted_age_range.split('-')[0])))
+                                blob2 = cv2.dnn.blobFromImage(face_img, 1, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+                                age_net.setInput(blob2)
+                                age_preds = age_net.forward()
+                                predicted_age_index = age_preds[0].argmax()
+                                predicted_age_range = age_list[predicted_age_index]
+                                lower_bound_age = int(''.join(filter(str.isdigit, predicted_age_range.split('-')[0])))
 
-                            if lower_bound_age >= 0 and lower_bound_age < 15:
-                                age_category = "child"
-                                print('child')
+                                if lower_bound_age >= 0 and lower_bound_age < 15:
+                                    age_category = "child"
+                                    print('child')
+                                else:
+                                    age_category = "adult"
+                                    print('adult')
+
+                                cv2.putText(frame, age_category, (x1, y1), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                                # cv2.rectangle(face_img, (x1, y1), (x2, y2), (255, 255, 0), 1)
                             else:
-                                age_category = "adult"
-                                print('adult')
+                                print("Invalid image or image size is (0, 0)")
 
-                            cv2.putText(frame, age_category, (x1, y1), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-                            # cv2.rectangle(face_img, (x1, y1), (x2, y2), (255, 255, 0), 1)
-                        else:
-                            print("Invalid image or image size is (0, 0)")
 
-    # Update the tracker with the detected faces
-    tracked_objects = ct.update(objects_rect)
+                        # Update the tracker with the detected faces
+                        tracked_objects = ct.update(objects_rect)
+                else:
+                    tracked_objects = []  # No faces detected, reset tracked_objects
+
+              
     cv2.imshow("frame",frame)
     key = cv2.waitKey(1) & 0xFF
     if key == 27:  # Press 'Esc' to exit
