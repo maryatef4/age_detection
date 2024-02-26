@@ -101,7 +101,7 @@ while True:
                                 predicted_age_range = age_list[predicted_age_index]
                                 lower_bound_age = int(''.join(filter(str.isdigit, predicted_age_range.split('-')[0])))
 
-                                if lower_bound_age >= 0 and lower_bound_age < 15:
+                                if lower_bound_age >= 0 and lower_bound_age < 18:
                                     age_category = "child"
                                     print('child')
                                 else:
